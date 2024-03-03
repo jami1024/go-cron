@@ -1,0 +1,13 @@
+{
+  "name": "go-cron",
+  "mode": "release",
+  "port": 8181,
+  "version": "v0.1.0",
+  "log": {
+    "level": "debug",
+    "filename": "./logs/app.log",
+    "max_size": 200,
+    "max_age": 30,
+    "max_backups": 7
+  }
+}
