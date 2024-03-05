@@ -1,0 +1,6 @@
+logs/
+*.pyc
+./plugins/*.xml
+.idea/
+!.gitignore
+*.DS_Store
