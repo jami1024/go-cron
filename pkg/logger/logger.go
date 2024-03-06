@@ -17,7 +17,7 @@ import (
 )
 
 // Init 初始化Logger
-func Init(cfg *config.LogConfig) (err error) {
+func Init(cfg *config.LogConfig) (zapL *zap.Logger, err error) {
 	writeSyncer := getLogWriter(
 		cfg.Filename,
 		cfg.MaxSize,
@@ -35,7 +35,7 @@ func Init(cfg *config.LogConfig) (err error) {
 	lg := zap.New(core, zap.AddCaller())
 	// 替换zap库中全局的logger
 	zap.ReplaceGlobals(lg)
-	return
+	return zap.L(), nil
 }
 
 func getEncoder() zapcore.Encoder {

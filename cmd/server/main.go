@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"go-cron/config"
-	routes "go-cron/internal/web"
+	"go-cron/internal/web"
 	"go-cron/pkg/logger"
 	"go.uber.org/zap"
 )
@@ -36,14 +36,16 @@ func main() {
 		fmt.Printf("init settings failed, err:%v\n", err)
 		return
 	}
-	fmt.Println(config.Conf)
-	fmt.Println(config.Conf.LogConfig == nil)
+	//fmt.Println(config.Conf)
+	//fmt.Println(config.Conf.LogConfig == nil)
 
 	// 2. 初始化日志
-	if err := logger.Init(config.Conf.LogConfig); err != nil {
+	zapL, err := logger.Init(config.Conf.LogConfig)
+	if err != nil {
 		fmt.Printf("init logger failed, err:%v\n", err)
 		return
 	}
+
 	// 3. 刷新日志
 	defer func(l *zap.Logger) {
 		err := l.Sync()
@@ -62,7 +64,8 @@ func main() {
 	//defer mysql.Close()
 	//
 	// 4. 注册路由
-	r := routes.Setup(config.Conf.Mode)
+
+	r := web.InitWeb(zapL)
 
 	// 6. 启动服务（优雅关机）
 	//fmt.Println(config.Conf.Port)

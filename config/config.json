@@ -1,6 +1,6 @@
 {
   "name": "go-cron",
-  "mode": "release",
+  "mode": "debug",
   "port": 8181,
   "version": "v0.1.0",
   "log": {
