@@ -18,15 +18,13 @@ import (
 )
 
 func InitWeb(zapL *zap.Logger) *gin.Engine {
-	// gin 模式
-	fmt.Println(config.Conf.EtcdConfig.Address)
 	// 初始化etcd
 	GTaskmgr, err := initEtcd(config.Conf.EtcdConfig.Address)
-	fmt.Println("config.Conf.EtcdConfig.Address")
 	if err != nil {
 		zapL.Error(fmt.Sprintf("初始化etcd失败", err))
 	}
 
+	// gin 模式
 	if config.Conf.Mode == gin.ReleaseMode {
 		gin.SetMode(gin.ReleaseMode)
 	}
