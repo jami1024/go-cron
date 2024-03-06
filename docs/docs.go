@@ -12,8 +12,8 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "contact": {
             "name": "jami1024",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
+            "url": "https://github.com/jami1024/go-cron",
+            "email": "996013797@qq.com"
         },
         "license": {
             "name": "Apache 2.0",
@@ -23,7 +23,92 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/tasks/save": {
+            "post": {
+                "description": "增加定时任务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "增加定时任务",
+                "parameters": [
+                    {
+                        "description": "请示参数data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.Task"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/web.Result"
+                        }
+                    },
+                    "400": {
+                        "description": "请求错误",
+                        "schema": {
+                            "$ref": "#/definitions/web.Result"
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/web.Result"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.Task": {
+            "type": "object",
+            "required": [
+                "command",
+                "cronExpr",
+                "name"
+            ],
+            "properties": {
+                "command": {
+                    "description": "shell命令",
+                    "type": "string"
+                },
+                "cronExpr": {
+                    "description": "cron表达式",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "任务名",
+                    "type": "string"
+                },
+                "zk": {
+                    "description": "用来表示哪个中控，或者理解成不同时区的集群，其中cron表达式要根据zk来写",
+                    "type": "string"
+                }
+            }
+        },
+        "web.Result": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "这个叫做业务错误码",
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it

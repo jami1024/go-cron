@@ -6,3 +6,5 @@ go-cron 是基于golang实现统一定时任务平台。
 
 ## 后端API
 在项目启动后请访问[地址](http://127.0.0.1:8181/swagger/index.html)
+
+## How to run

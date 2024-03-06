@@ -18,6 +18,7 @@ type AppConfig struct {
 	*LogConfig   `mapstructure:"log"`
 	*MySQLConfig `mapstructure:"mysql"`
 	*RedisConfig `mapstructure:"redis"`
+	*EtcdConfig  `mapstructure:"etcd"`
 }
 
 type LogConfig struct {
@@ -44,6 +45,11 @@ type RedisConfig struct {
 	Port     int    `mapstructure:"port"`
 	DB       int    `mapstructure:"db"`
 	PoolSize int    `mapstructure:"pool_size"`
+}
+
+type EtcdConfig struct {
+	Address []string `mapstructure:"address"`
+	KeyPath string   `mapstructure:"key_path"`
 }
 
 func Init() (err error) {

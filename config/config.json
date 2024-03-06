@@ -9,5 +9,9 @@
     "max_size": 200,
     "max_age": 30,
     "max_backups": 7
+  },
+  "etcd": {
+    "address": ["127.0.0.1:12379"],
+    "key_path": "/cron/jobs/"
   }
 }

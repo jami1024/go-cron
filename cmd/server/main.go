@@ -63,10 +63,8 @@ func main() {
 	//}
 	//defer mysql.Close()
 	//
-	// 4. 注册路由
-
+	// 初始化web
 	r := web.InitWeb(zapL)
-
 	// 6. 启动服务（优雅关机）
 	//fmt.Println(config.Conf.Port)
 	srv := &http.Server{

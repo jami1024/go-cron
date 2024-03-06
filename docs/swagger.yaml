@@ -1,15 +1,72 @@
 basePath: /
+definitions:
+  domain.Task:
+    properties:
+      command:
+        description: shell命令
+        type: string
+      cronExpr:
+        description: cron表达式
+        type: string
+      name:
+        description: 任务名
+        type: string
+      zk:
+        description: 用来表示哪个中控，或者理解成不同时区的集群，其中cron表达式要根据zk来写
+        type: string
+    required:
+    - command
+    - cronExpr
+    - name
+    type: object
+  web.Result:
+    properties:
+      code:
+        description: 这个叫做业务错误码
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
 host: 127.0.0.1:8181
 info:
   contact:
-    email: support@swagger.io
+    email: 996013797@qq.com
     name: jami1024
-    url: http://www.swagger.io/support
+    url: https://github.com/jami1024/go-cron
   description: go-cron api
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: go-cron api
   version: "1.0"
-paths: {}
+paths:
+  /tasks/save:
+    post:
+      consumes:
+      - application/json
+      description: 增加定时任务
+      parameters:
+      - description: 请示参数data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/web.Result'
+        "400":
+          description: 请求错误
+          schema:
+            $ref: '#/definitions/web.Result'
+        "500":
+          description: 内部错误
+          schema:
+            $ref: '#/definitions/web.Result'
+      summary: 增加定时任务
 swagger: "2.0"
