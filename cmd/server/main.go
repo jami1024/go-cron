@@ -16,6 +16,20 @@ import (
 	"go.uber.org/zap"
 )
 
+// swagger文档
+// @title go-cron api
+// @version 1.0
+// @description go-cron api
+
+// @contact.name jami1024
+// @contact.url https://github.com/jami1024/go-cron
+// @contact.email 996013797@qq.com
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host 127.0.0.1:8181
+// @BasePath /
+
 func main() {
 	// 1. 加载配置
 	if err := config.Init(); err != nil {

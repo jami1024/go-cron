@@ -1,0 +1,15 @@
+basePath: /
+host: 127.0.0.1:8181
+info:
+  contact:
+    email: support@swagger.io
+    name: jami1024
+    url: http://www.swagger.io/support
+  description: go-cron api
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: go-cron api
+  version: "1.0"
+paths: {}
+swagger: "2.0"

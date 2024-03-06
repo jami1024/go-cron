@@ -4,7 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go-cron/config"
+	_ "go-cron/docs"
 	"go-cron/pkg/logger"
 )
 
@@ -22,5 +26,7 @@ func Setup(mode string) *gin.Engine {
 	r.GET("/version", func(c *gin.Context) {
 		c.String(http.StatusOK, config.Conf.Version)
 	})
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	return r
 }
