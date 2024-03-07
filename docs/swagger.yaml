@@ -11,6 +11,9 @@ definitions:
       name:
         description: 任务名
         type: string
+      uniqueCode:
+        description: 用来拼接任务名称保证任务唯一，用户不用关注、程序自身赋值。
+        type: string
       zk:
         description: 用来表示哪个中控，或者理解成不同时区的集群，其中cron表达式要根据zk来写
         type: string
@@ -41,11 +44,11 @@ info:
   title: go-cron api
   version: "1.0"
 paths:
-  /tasks/save:
+  /tasks/delete:
     post:
       consumes:
       - application/json
-      description: 增加定时任务
+      description: 删除定时任务
       parameters:
       - description: 请示参数data
         in: body
@@ -68,5 +71,59 @@ paths:
           description: 内部错误
           schema:
             $ref: '#/definitions/web.Result'
-      summary: 增加定时任务
+      summary: 删除定时任务
+  /tasks/list:
+    get:
+      consumes:
+      - application/json
+      description: 获取定时任务列表
+      parameters:
+      - description: zk
+        in: query
+        name: zk
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/web.Result'
+        "400":
+          description: 请求错误
+          schema:
+            $ref: '#/definitions/web.Result'
+        "500":
+          description: 内部错误
+          schema:
+            $ref: '#/definitions/web.Result'
+      summary: 获取定时任务列表
+  /tasks/save:
+    post:
+      consumes:
+      - application/json
+      description: 编辑定时任务
+      parameters:
+      - description: 请示参数data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/web.Result'
+        "400":
+          description: 请求错误
+          schema:
+            $ref: '#/definitions/web.Result'
+        "500":
+          description: 内部错误
+          schema:
+            $ref: '#/definitions/web.Result'
+      summary: 编辑定时任务
 swagger: "2.0"

@@ -24,16 +24,99 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/tasks/save": {
+        "/tasks/delete": {
             "post": {
-                "description": "增加定时任务",
+                "description": "删除定时任务",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "增加定时任务",
+                "summary": "删除定时任务",
+                "parameters": [
+                    {
+                        "description": "请示参数data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.Task"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/web.Result"
+                        }
+                    },
+                    "400": {
+                        "description": "请求错误",
+                        "schema": {
+                            "$ref": "#/definitions/web.Result"
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/web.Result"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/list": {
+            "get": {
+                "description": "获取定时任务列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "获取定时任务列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "zk",
+                        "name": "zk",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "请求成功",
+                        "schema": {
+                            "$ref": "#/definitions/web.Result"
+                        }
+                    },
+                    "400": {
+                        "description": "请求错误",
+                        "schema": {
+                            "$ref": "#/definitions/web.Result"
+                        }
+                    },
+                    "500": {
+                        "description": "内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/web.Result"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/save": {
+            "post": {
+                "description": "编辑定时任务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "编辑定时任务",
                 "parameters": [
                     {
                         "description": "请示参数data",
@@ -87,6 +170,10 @@ const docTemplate = `{
                 },
                 "name": {
                     "description": "任务名",
+                    "type": "string"
+                },
+                "uniqueCode": {
+                    "description": "用来拼接任务名称保证任务唯一，用户不用关注、程序自身赋值。",
                     "type": "string"
                 },
                 "zk": {
