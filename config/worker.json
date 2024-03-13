@@ -1,0 +1,6 @@
+{
+  "etcdAddress": ["127.0.0.1:12379"],
+  "keyPath": "/cron/jobs/",
+  "workerPath": "/cron/workers/",
+  "zk": "zk"
+}
