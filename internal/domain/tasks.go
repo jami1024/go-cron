@@ -17,3 +17,11 @@ type TaskMgr struct {
 	Kv     clientv3.KV      `json:"kv"`
 	Lease  clientv3.Lease   `json:"lease"`
 }
+
+// WorkerTaskMgr worker节点任务管理器
+type WorkerTaskMgr struct {
+	Client  *clientv3.Client
+	Kv      clientv3.KV
+	Lease   clientv3.Lease
+	Watcher clientv3.Watcher
+}

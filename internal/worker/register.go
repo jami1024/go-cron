@@ -25,7 +25,7 @@ func keepOnline(workPath, zk string) {
 	for {
 		// 注册路径
 		regKey := workPath + zk + "/" + localIp
-		fmt.Println(regKey)
+		fmt.Println("worker节点注册地址", regKey)
 
 		// 创建租约
 		leaseGrantResp, err := GRegister.lease.Grant(context.TODO(), 10)

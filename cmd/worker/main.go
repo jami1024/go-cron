@@ -50,13 +50,22 @@ func initArgs() {
 func main() {
 	// 初始化命令行参数
 	initArgs()
-	fmt.Println(GConfig)
 	// 服务注册
 	err := worker.InitRegister(GConfig.EtcdAddress, GConfig.WorkerPath, GConfig.Zk)
 	if err != nil {
 		fmt.Printf("worker注册失败,%s", err.Error())
+		return
 	}
 	fmt.Println("worker注册成功")
+
+	// 初始化任务管理器
+	err = worker.InitTaskMgr(GConfig.EtcdAddress, GConfig.KeyPath, GConfig.Zk)
+	if err != nil {
+		fmt.Printf("worker初始化任务管理器,%s", err.Error())
+		return
+	}
+	fmt.Println("worker初始化任务管理器成功")
+
 	// 正常退出
 	for {
 		time.Sleep(1 * time.Second)

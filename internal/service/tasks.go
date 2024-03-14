@@ -63,7 +63,7 @@ func (t *taskService) Delete(ctx context.Context, taskName, zk, uniqueCode strin
 
 	// etcd 中key的地址
 	taskKey := config.Conf.EtcdConfig.KeyPath + zk + "/" + taskName + "_" + uniqueCode
-	//fmt.Println(string(taskJson))
+	fmt.Println("删除任务地址", taskKey)
 	// 删除
 	delResp, err := t.taskMgr.Kv.Delete(context.TODO(), taskKey, clientv3.WithPrevKV())
 	if err != nil {
