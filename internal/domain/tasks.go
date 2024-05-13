@@ -1,6 +1,11 @@
 package domain
 
-import clientv3 "go.etcd.io/etcd/client/v3"
+import (
+	"time"
+
+	"github.com/gorhill/cronexpr"
+	clientv3 "go.etcd.io/etcd/client/v3"
+)
 
 // Task 定时任务
 type Task struct {
@@ -24,4 +29,17 @@ type WorkerTaskMgr struct {
 	Kv      clientv3.KV
 	Lease   clientv3.Lease
 	Watcher clientv3.Watcher
+}
+
+// TaskEvent 任务变化事件
+type TaskEvent struct {
+	EventType int //  SAVE, DELETE
+	Task      *Task
+}
+
+// TaskSchedulePlan 任务调度计划
+type TaskSchedulePlan struct {
+	Task     *Task                // 要调度的任务信息
+	Expr     *cronexpr.Expression // 解析好的cronexpr表达式
+	NextTime time.Time            // 下次调度时间
 }

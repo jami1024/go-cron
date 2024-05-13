@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"go-cron/internal/domain"
@@ -12,6 +13,9 @@ import (
 )
 
 var GWorkerTaskMgr *domain.WorkerTaskMgr
+var keyName string
+var keyUniqueCode string
+var keyZk string
 
 // unpackJob 反序列化定时任务
 func unpackJob(value []byte) (ret domain.Task, err error) {
@@ -20,6 +24,14 @@ func unpackJob(value []byte) (ret domain.Task, err error) {
 		return
 	}
 	return
+}
+
+// TaskChangeEvent 任务变化事件有2种：1）更新任务 2）删除任务
+func TaskChangeEvent(eventType int, task *domain.Task) (taskEvent *domain.TaskEvent) {
+	return &domain.TaskEvent{
+		EventType: eventType,
+		Task:      task,
+	}
 }
 
 // 监听任务变化
@@ -39,8 +51,17 @@ func watchJobs(keyPath, zk string) (err error) {
 		// 反序列化json得到Task
 		task, err := unpackJob(keypair.Value)
 		if err == nil {
-			// todo 发送任务给调度器
+
 			fmt.Println("已存在任务", task)
+
+			// 构建一个已存在Event
+
+			taskEvent := TaskChangeEvent(1, &task)
+			fmt.Println("已存在Event", taskEvent)
+
+			// 发送任务给调度器
+			G_scheduler.PushTaskEvent(taskEvent)
+			fmt.Println("发送已存在任务给调度器完毕")
 		}
 
 	}
@@ -57,17 +78,41 @@ func watchJobs(keyPath, zk string) (err error) {
 			for _, watchEvent := range watchResp.Events {
 				switch watchEvent.Type {
 				case mvccpb.PUT: // 任务保存事件
-					//todo 发送任务给调度器
 					task, err := unpackJob(watchEvent.Kv.Value)
 					if err != nil {
 						// 解析错误跳过，定时任务的格式异常
 						continue
 					}
 					fmt.Println("新增/编辑任务", task)
+					// 构建一个更新Event
+					taskEvent := TaskChangeEvent(1, &task)
+					// 发送任务给调度器
+					G_scheduler.PushTaskEvent(taskEvent)
+					fmt.Println("更新Event", taskEvent)
+
 				case mvccpb.DELETE: // 任务被删除了
 					// Delete /cron/jobs/zk/xx
-					//todo 发送任务给调度器
 					fmt.Println("删除任务", string(watchEvent.Kv.Key))
+					taskKey := string(watchEvent.Kv.Key)
+					parts := strings.Split(taskKey, "/")
+
+					if len(parts) != 5 {
+						lastPart := parts[len(parts)-1]
+						//fmt.Println(lastPart)
+						keyZk = parts[3]
+						keyName = strings.Split(lastPart, "_")[0]
+						keyUniqueCode = strings.Split(lastPart, "_")[1]
+					} else {
+						continue
+					}
+					// 删除任务需要任务名称和唯一值和对应中控
+					task := &domain.Task{Name: keyName, UniqueCode: keyUniqueCode, Zk: keyZk}
+					// 构建一个删除Event
+					taskEvent := TaskChangeEvent(2, task)
+					// 发送任务给调度器
+					G_scheduler.PushTaskEvent(taskEvent)
+					fmt.Println("删除Event", taskEvent)
+
 				}
 			}
 		}

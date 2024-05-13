@@ -58,6 +58,14 @@ func main() {
 	}
 	fmt.Println("worker注册成功")
 
+	// 初始化调度器
+	err = worker.InitScheduler()
+	if err != nil {
+		fmt.Printf("worker初始化调度器,%s", err.Error())
+		return
+	}
+	fmt.Println("worker初始化调度器成功")
+
 	// 初始化任务管理器
 	err = worker.InitTaskMgr(GConfig.EtcdAddress, GConfig.KeyPath, GConfig.Zk)
 	if err != nil {
