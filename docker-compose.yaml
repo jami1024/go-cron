@@ -1,4 +1,4 @@
-version: '3.0'
+#version: '3.0'  # docker compose第二版中version已经过时
 services:
   etcd:
     image: 'bitnami/etcd:3.5.9'

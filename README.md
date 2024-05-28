@@ -11,7 +11,7 @@ go-cron 是基于golang实现统一定时任务平台。
 https://github.com/jami1024/go-cron
 ```
 ## 运行
-> 需要安装docker-compose后在项目亘目录执行`docker-compose up -d`安装etcd
+> 需要安装docker-compose后在项目根目录执行`docker-compose up -d`安装etcd
 ```shell
 cd go-cron
 go run cmd/server/main.go 
