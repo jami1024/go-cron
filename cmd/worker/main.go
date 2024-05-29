@@ -58,6 +58,14 @@ func main() {
 	}
 	fmt.Println("worker注册成功")
 
+	// 初始化执行器
+	err = worker.InitExecutor()
+	if err != nil {
+		fmt.Printf("worker初始化执行器,%s", err.Error())
+		return
+	}
+	fmt.Println("worker初始化执行器成功")
+
 	// 初始化调度器
 	err = worker.InitScheduler()
 	if err != nil {

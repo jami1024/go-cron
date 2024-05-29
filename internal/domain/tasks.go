@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"time"
 
 	"github.com/gorhill/cronexpr"
@@ -37,9 +38,38 @@ type TaskEvent struct {
 	Task      *Task
 }
 
+// BuildTaskExecuteInfo 构造执行状态信息
+func BuildTaskExecuteInfo(taskSchedulePlan *TaskSchedulePlan) (taskExecuteInfo *TaskExecuteInfo) {
+	taskExecuteInfo = &TaskExecuteInfo{
+		Task:     taskSchedulePlan.Task,
+		PlanTime: taskSchedulePlan.NextTime, // 计算调度时间
+		RealTime: time.Now(),                // 真实调度时间
+	}
+	taskExecuteInfo.CancelCtx, taskExecuteInfo.CancelFunc = context.WithCancel(context.TODO())
+	return
+}
+
 // TaskSchedulePlan 任务调度计划
 type TaskSchedulePlan struct {
 	Task     *Task                // 要调度的任务信息
 	Expr     *cronexpr.Expression // 解析好的cronexpr表达式
 	NextTime time.Time            // 下次调度时间
+}
+
+// TaskExecuteInfo 任务执行状态信息
+type TaskExecuteInfo struct {
+	Task       *Task              // 任务信息
+	PlanTime   time.Time          // 理论上的调度时间
+	RealTime   time.Time          // 实际的调度时间
+	CancelCtx  context.Context    // 任务command的context
+	CancelFunc context.CancelFunc //  用于取消command执行的cancel函数
+}
+
+// TaskExecuteResult 任务执行结果
+type TaskExecuteResult struct {
+	ExecuteInfo *TaskExecuteInfo // 执行状态
+	Output      []byte           // 脚本输出
+	Err         error            // 脚本错误原因
+	StartTime   time.Time        // 启动时间
+	EndTime     time.Time        // 结束时间
 }
