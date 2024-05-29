@@ -70,7 +70,7 @@ func (scheduler *Scheduler) TrySchedule() (scheduleAfter time.Duration) {
 		// 小于或者等于当前时间，证明任务到期，要执行
 		if taskPlan.NextTime.Before(now) || taskPlan.NextTime.Equal(now) {
 
-			// 启动任务，注意如果上一次还没有结束本次不会再次执行
+			// 启动任务，注意如果上一次还没有结束本次会再次执行
 			fmt.Println("执行任务", taskPlan.Task.Name, taskPlan.Task.Zk, taskPlan.Task.Command,
 				taskPlan.Task.CronExpr)
 			scheduler.tryStartTask(taskPlan)
@@ -91,13 +91,13 @@ func (scheduler *Scheduler) TrySchedule() (scheduleAfter time.Duration) {
 
 // tryStartTask 执行任务
 func (scheduler *Scheduler) tryStartTask(taskPlan *domain.TaskSchedulePlan) {
-	// 如果任务正在执行，跳过本次调度
+	// 取消该步骤如果任务正在执行，跳过本次调度
 	key := taskPlan.Task.Name + "_" + taskPlan.Task.UniqueCode
-	_, taskExecuting := scheduler.taskExecutingTable[key]
-	if taskExecuting {
-		fmt.Println("尚未退出,跳过执行:", key)
-		return
-	}
+	//_, taskExecuting := scheduler.taskExecutingTable[key]
+	//if taskExecuting {
+	//	fmt.Println("尚未退出,跳过执行:", key)
+	//	return
+	//}
 	// 构建执行状态信息
 	taskExecuteInfo := domain.BuildTaskExecuteInfo(taskPlan)
 

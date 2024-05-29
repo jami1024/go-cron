@@ -31,6 +31,7 @@ func (executor *Executor) ExecuteTask(info *domain.TaskExecuteInfo) {
 	// 随机睡眠(0~1s)
 	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 
+	// todo 只能执行bash脚本和命令、后续要支持python脚本
 	// 执行shell命令
 	cmd := exec.CommandContext(info.CancelCtx, "/bin/bash", "-c", info.Task.Command)
 	// 执行并捕获输出
