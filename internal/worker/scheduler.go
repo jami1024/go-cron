@@ -31,15 +31,19 @@ func (scheduler *Scheduler) handleTaskEvent(taskEvent *domain.TaskEvent) {
 		}
 		// name + 唯一值
 		key := taskEvent.Task.Name + "_" + taskEvent.Task.UniqueCode
+		fmt.Println("新增前定时任务列表", key, scheduler.taskPlanTable)
 		scheduler.taskPlanTable[key] = taskSchedulePlan
+		fmt.Println("新增后定时任务列表", key, scheduler.taskPlanTable)
 	case 2: // 删除任务事件
 		// name + 唯一值
 		key := taskEvent.Task.Name + "_" + taskEvent.Task.UniqueCode
+		fmt.Println("删除前定时任务列表", key, scheduler.taskPlanTable)
 		// 检查是否存在
 		_, taskExisted := scheduler.taskPlanTable[key]
 		if taskExisted {
 			delete(scheduler.taskPlanTable, key)
 		}
+		fmt.Println("删除后定时任务列表", key, scheduler.taskPlanTable)
 	}
 }
 
@@ -47,8 +51,9 @@ func (scheduler *Scheduler) handleTaskEvent(taskEvent *domain.TaskEvent) {
 func (scheduler *Scheduler) handleTaskResult(result *domain.TaskExecuteResult) {
 	// 删除执行状态
 	key := result.ExecuteInfo.Task.Name + "_" + result.ExecuteInfo.Task.UniqueCode
+	//fmt.Println("任务", key)
 	delete(scheduler.taskExecutingTable, key)
-	fmt.Println("任务执行完成:", result.ExecuteInfo.Task.Name, string(result.Output), result.Err)
+	fmt.Println("执行完成的任务从内存中删除:", result.ExecuteInfo.Task.Name, string(result.Output), result.Err)
 
 }
 
@@ -65,14 +70,13 @@ func (scheduler *Scheduler) TrySchedule() (scheduleAfter time.Duration) {
 	now := time.Now()
 
 	// 遍历所有任务
+	fmt.Println("准备遍历计划任务", scheduler.taskPlanTable)
 	for _, taskPlan := range scheduler.taskPlanTable {
 
 		// 小于或者等于当前时间，证明任务到期，要执行
 		if taskPlan.NextTime.Before(now) || taskPlan.NextTime.Equal(now) {
 
 			// 启动任务，注意如果上一次还没有结束本次会再次执行
-			fmt.Println("执行任务", taskPlan.Task.Name, taskPlan.Task.Zk, taskPlan.Task.Command,
-				taskPlan.Task.CronExpr)
 			scheduler.tryStartTask(taskPlan)
 
 			// 更新下次执行时间
@@ -105,7 +109,7 @@ func (scheduler *Scheduler) tryStartTask(taskPlan *domain.TaskSchedulePlan) {
 	scheduler.taskExecutingTable[key] = taskExecuteInfo
 
 	// 执行任务
-	fmt.Println("执行任务:", taskExecuteInfo.Task.Name, taskExecuteInfo.PlanTime,
+	fmt.Println("触发执行任务:", taskExecuteInfo.Task.Name, taskExecuteInfo.PlanTime,
 		taskExecuteInfo.RealTime)
 	G_executor.ExecuteTask(taskExecuteInfo)
 }
@@ -122,24 +126,21 @@ func (scheduler *Scheduler) scheduleLoop() {
 		select {
 		case taskEvent := <-scheduler.taskEventChan: //监听任务变化事件
 			// 对内存中维护的任务列表做增删改查
-			fmt.Println(taskEvent)
+			fmt.Println("监听任务变化事件", taskEvent.Task.Name, taskEvent.EventType)
 			scheduler.handleTaskEvent(taskEvent)
 		case <-scheduleTimer.C: // 最近的任务到期了
-		case tasklResult := <-scheduler.taskResultChan: // 监听任务执行结果
-			scheduler.handleTaskResult(tasklResult)
+		case taskResult := <-scheduler.taskResultChan: // 监听任务执行结果
+			scheduler.handleTaskResult(taskResult)
 		}
 		// 调度一次任务
 		scheduleAfter = scheduler.TrySchedule()
 		// 重置调度间隔
-
-		fmt.Println("间隔", scheduleAfter)
 		scheduleTimer.Reset(scheduleAfter)
 	}
 }
 
 // PushTaskEvent 推送任务变化事件
 func (scheduler *Scheduler) PushTaskEvent(taskEvent *domain.TaskEvent) {
-	fmt.Println("1111")
 	scheduler.taskEventChan <- taskEvent
 }
 

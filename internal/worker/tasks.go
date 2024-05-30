@@ -92,17 +92,18 @@ func watchJobs(keyPath, zk string) (err error) {
 
 				case mvccpb.DELETE: // 任务被删除了
 					// Delete /cron/jobs/zk/xx
-					fmt.Println("删除任务", string(watchEvent.Kv.Key))
+
 					taskKey := string(watchEvent.Kv.Key)
 					parts := strings.Split(taskKey, "/")
-
-					if len(parts) != 5 {
+					fmt.Println("删除任务", string(watchEvent.Kv.Key), parts)
+					if len(parts) == 5 {
 						lastPart := parts[len(parts)-1]
 						//fmt.Println(lastPart)
 						keyZk = parts[3]
 						keyName = strings.Split(lastPart, "_")[0]
 						keyUniqueCode = strings.Split(lastPart, "_")[1]
 					} else {
+						fmt.Println("删除任务异常,不做处理。")
 						continue
 					}
 					// 删除任务需要任务名称和唯一值和对应中控
@@ -111,7 +112,7 @@ func watchJobs(keyPath, zk string) (err error) {
 					taskEvent := TaskChangeEvent(2, task)
 					// 发送任务给调度器
 					G_scheduler.PushTaskEvent(taskEvent)
-					fmt.Println("删除Event", taskEvent)
+					fmt.Println("触发调度器，删除内存中定时任务列表")
 
 				}
 			}
