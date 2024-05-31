@@ -12,6 +12,7 @@ import (
 	_ "go-cron/docs"
 	"go-cron/internal/domain"
 	"go-cron/internal/service"
+	"go-cron/internal/web/middleware"
 	"go-cron/pkg/logger"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
@@ -30,7 +31,8 @@ func InitWeb(zapL *zap.Logger) *gin.Engine {
 	}
 	server := gin.New()
 	server.Use(logger.GinLogger(), logger.GinRecovery(true))
-
+	// 解决跨域
+	server.Use(middleware.Cors())
 	server.GET("/version", func(c *gin.Context) {
 		c.String(http.StatusOK, config.Conf.Version)
 	})
