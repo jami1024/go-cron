@@ -11,14 +11,15 @@ import (
 var Conf = new(AppConfig)
 
 type AppConfig struct {
-	Name         string `mapstructure:"name"`
-	Mode         string `mapstructure:"mode"`
-	Version      string `mapstructure:"version"`
-	Port         int    `mapstructure:"port"`
-	*LogConfig   `mapstructure:"log"`
-	*MySQLConfig `mapstructure:"mysql"`
-	*RedisConfig `mapstructure:"redis"`
-	*EtcdConfig  `mapstructure:"etcd"`
+	Name             string `mapstructure:"name"`
+	Mode             string `mapstructure:"mode"`
+	Version          string `mapstructure:"version"`
+	Port             int    `mapstructure:"port"`
+	*LogConfig       `mapstructure:"log"`
+	*WorkerLogConfig `mapstructure:"workerlog"`
+	*MySQLConfig     `mapstructure:"mysql"`
+	*RedisConfig     `mapstructure:"redis"`
+	*EtcdConfig      `mapstructure:"etcd"`
 }
 
 type LogConfig struct {
@@ -29,6 +30,13 @@ type LogConfig struct {
 	MaxBackups int    `mapstructure:"max_backups"`
 }
 
+type WorkerLogConfig struct {
+	Level      string `mapstructure:"level"`
+	Filename   string `mapstructure:"filename"`
+	MaxSize    int    `mapstructure:"max_size"`
+	MaxAge     int    `mapstructure:"max_age"`
+	MaxBackups int    `mapstructure:"max_backups"`
+}
 type MySQLConfig struct {
 	Host         string `mapstructure:"host"`
 	User         string `mapstructure:"user"`

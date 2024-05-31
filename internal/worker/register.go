@@ -2,11 +2,11 @@ package worker
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.uber.org/zap"
 )
 
 var localIp string
@@ -25,7 +25,7 @@ func keepOnline(workPath, zk string) {
 	for {
 		// 注册路径
 		regKey := workPath + zk + "/" + localIp
-		fmt.Println("worker节点注册地址", regKey)
+		zap.L().Sugar().Infof("worker节点注册地址: %v ", regKey)
 
 		// 创建租约
 		leaseGrantResp, err := GRegister.lease.Grant(context.TODO(), 10)

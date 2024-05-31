@@ -3,13 +3,14 @@ package worker
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
 	"go-cron/internal/domain"
+
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.uber.org/zap"
 )
 
 var GWorkerTaskMgr *domain.WorkerTaskMgr
@@ -39,7 +40,7 @@ func watchJobs(keyPath, zk string) (err error) {
 
 	// 1, get一下/cron/jobs/zk/目录下的所有任务，并且获知当前集群的revision
 	dir := keyPath + zk
-	fmt.Println("任务dir", dir)
+	zap.L().Sugar().Info("任务dir", dir)
 	getResp, err := GWorkerTaskMgr.Kv.Get(context.TODO(), dir, clientv3.WithPrefix())
 
 	if err != nil {
@@ -52,16 +53,16 @@ func watchJobs(keyPath, zk string) (err error) {
 		task, err := unpackJob(keypair.Value)
 		if err == nil {
 
-			fmt.Println("已存在任务", task)
+			zap.L().Sugar().Info("已存在任务", task)
 
 			// 构建一个已存在Event
 
 			taskEvent := TaskChangeEvent(1, &task)
-			fmt.Println("已存在Event", taskEvent)
+			zap.L().Sugar().Info("已存在Event", taskEvent)
 
 			// 发送任务给调度器
 			G_scheduler.PushTaskEvent(taskEvent)
-			fmt.Println("发送已存在任务给调度器完毕")
+			zap.L().Sugar().Info("发送已存在任务给调度器完毕")
 		}
 
 	}
@@ -83,19 +84,19 @@ func watchJobs(keyPath, zk string) (err error) {
 						// 解析错误跳过，定时任务的格式异常
 						continue
 					}
-					fmt.Println("新增/编辑任务", task)
+					zap.L().Sugar().Info("新增/编辑任务", task)
 					// 构建一个更新Event
 					taskEvent := TaskChangeEvent(1, &task)
 					// 发送任务给调度器
 					G_scheduler.PushTaskEvent(taskEvent)
-					fmt.Println("更新Event", taskEvent)
+					zap.L().Sugar().Info("更新Event", taskEvent)
 
 				case mvccpb.DELETE: // 任务被删除了
 					// Delete /cron/jobs/zk/xx
 
 					taskKey := string(watchEvent.Kv.Key)
 					parts := strings.Split(taskKey, "/")
-					fmt.Println("删除任务", string(watchEvent.Kv.Key), parts)
+					zap.L().Sugar().Info("删除任务", string(watchEvent.Kv.Key), parts)
 					if len(parts) == 5 {
 						lastPart := parts[len(parts)-1]
 						//fmt.Println(lastPart)
@@ -103,7 +104,7 @@ func watchJobs(keyPath, zk string) (err error) {
 						keyName = strings.Split(lastPart, "_")[0]
 						keyUniqueCode = strings.Split(lastPart, "_")[1]
 					} else {
-						fmt.Println("删除任务异常,不做处理。")
+						zap.L().Sugar().Warnf("删除任务异常,不做处理。")
 						continue
 					}
 					// 删除任务需要任务名称和唯一值和对应中控
@@ -112,7 +113,7 @@ func watchJobs(keyPath, zk string) (err error) {
 					taskEvent := TaskChangeEvent(2, task)
 					// 发送任务给调度器
 					G_scheduler.PushTaskEvent(taskEvent)
-					fmt.Println("触发调度器，删除内存中定时任务列表")
+					zap.L().Sugar().Info("触发调度器，删除内存中定时任务列表")
 
 				}
 			}

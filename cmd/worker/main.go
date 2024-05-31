@@ -7,7 +7,11 @@ import (
 	"os"
 	"time"
 
+	"go-cron/config"
 	"go-cron/internal/worker"
+	"go-cron/pkg/logger"
+
+	"go.uber.org/zap"
 )
 
 var GConfig *Config
@@ -48,39 +52,59 @@ func initArgs() {
 }
 
 func main() {
-	// 初始化命令行参数
-	initArgs()
-	// 服务注册
-	err := worker.InitRegister(GConfig.EtcdAddress, GConfig.WorkerPath, GConfig.Zk)
-	if err != nil {
-		fmt.Printf("worker注册失败,%s", err.Error())
+	// 1. 加载配置
+	if err := config.Init(); err != nil {
+		fmt.Printf("init settings failed, err:%v\n", err)
 		return
 	}
-	fmt.Println("worker注册成功")
+	// 2. 初始化日志
+	err := logger.WorkerInit(config.Conf.WorkerLogConfig)
+	if err != nil {
+		fmt.Printf("init logger failed, err:%v\n", err)
+	}
+	defer func(l *zap.Logger) {
+		err := l.Sync()
+		if err != nil {
+			fmt.Printf("sync log failed, err:%v\n", err)
+			return
+		}
+	}(zap.L())
+	zap.L().Debug("logger init success...")
+
+	// 初始化命令行参数
+	initArgs()
+
+	// 服务注册
+	err = worker.InitRegister(GConfig.EtcdAddress, GConfig.WorkerPath, GConfig.Zk)
+	if err != nil {
+		zap.L().Sugar().Errorf("worker注册失败,%s", err.Error())
+		return
+	}
+	zap.L().Sugar().Info("worker注册成功")
 
 	// 初始化执行器
 	err = worker.InitExecutor()
 	if err != nil {
-		fmt.Printf("worker初始化执行器,%s", err.Error())
+		zap.L().Sugar().Errorf("worker初始化执行器,%s", err.Error())
 		return
 	}
-	fmt.Println("worker初始化执行器成功")
+	zap.L().Sugar().Info("worker初始化执行器成功")
 
 	// 初始化调度器
 	err = worker.InitScheduler()
 	if err != nil {
-		fmt.Printf("worker初始化调度器,%s", err.Error())
+		zap.L().Sugar().Errorf("worker初始化调度器,%s", err.Error())
 		return
 	}
-	fmt.Println("worker初始化调度器成功")
+	zap.L().Sugar().Info("worker初始化调度器成功")
 
 	// 初始化任务管理器
 	err = worker.InitTaskMgr(GConfig.EtcdAddress, GConfig.KeyPath, GConfig.Zk)
 	if err != nil {
-		fmt.Printf("worker初始化任务管理器,%s", err.Error())
+		zap.L().Sugar().Errorf("worker初始化任务管理器,%s", err.Error())
 		return
 	}
-	fmt.Println("worker初始化任务管理器成功")
+	zap.L().Sugar().Info("worker初始化任务管理器成功")
 
 	// 正常退出
 	for {
