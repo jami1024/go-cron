@@ -1,11 +1,12 @@
 package worker
 
 import (
-	"fmt"
 	"time"
 
-	"github.com/gorhill/cronexpr"
 	"go-cron/internal/domain"
+
+	"github.com/gorhill/cronexpr"
+	"go.uber.org/zap"
 )
 
 // Scheduler 任务调度
@@ -31,19 +32,19 @@ func (scheduler *Scheduler) handleTaskEvent(taskEvent *domain.TaskEvent) {
 		}
 		// name + 唯一值
 		key := taskEvent.Task.Name + "_" + taskEvent.Task.UniqueCode
-		fmt.Println("新增前定时任务列表", key, scheduler.taskPlanTable)
+		zap.L().Sugar().Infof("新增前定时任务列表: %v %v", key, scheduler.taskPlanTable)
 		scheduler.taskPlanTable[key] = taskSchedulePlan
-		fmt.Println("新增后定时任务列表", key, scheduler.taskPlanTable)
+		zap.L().Sugar().Infof("新增后定时任务列表: %v %v", key, scheduler.taskPlanTable)
 	case 2: // 删除任务事件
 		// name + 唯一值
 		key := taskEvent.Task.Name + "_" + taskEvent.Task.UniqueCode
-		fmt.Println("删除前定时任务列表", key, scheduler.taskPlanTable)
+		zap.L().Sugar().Infof("删除前定时任务列表: %v %v", key, scheduler.taskPlanTable)
 		// 检查是否存在
 		_, taskExisted := scheduler.taskPlanTable[key]
 		if taskExisted {
 			delete(scheduler.taskPlanTable, key)
 		}
-		fmt.Println("删除后定时任务列表", key, scheduler.taskPlanTable)
+		zap.L().Sugar().Infof("删除后定时任务列表: %v %v", key, scheduler.taskPlanTable)
 	}
 }
 
@@ -53,7 +54,8 @@ func (scheduler *Scheduler) handleTaskResult(result *domain.TaskExecuteResult) {
 	key := result.ExecuteInfo.Task.Name + "_" + result.ExecuteInfo.Task.UniqueCode
 	//fmt.Println("任务", key)
 	delete(scheduler.taskExecutingTable, key)
-	fmt.Println("执行完成的任务从内存中删除:", result.ExecuteInfo.Task.Name, string(result.Output), result.Err)
+	// zap.L().Sugar().Info("执行完成的任务从内存中删除:", result.ExecuteInfo.Task.Name, string(result.Output), result.Err)
+	zap.L().Sugar().Infof("执行完成的任务从内存中删除: %v %v", result.ExecuteInfo.Task.Name, string(result.Output))
 
 }
 
@@ -70,13 +72,15 @@ func (scheduler *Scheduler) TrySchedule() (scheduleAfter time.Duration) {
 	now := time.Now()
 
 	// 遍历所有任务
-	fmt.Println("准备遍历计划任务", scheduler.taskPlanTable)
+	zap.L().Sugar().Infof("准备遍历计划任务: %v", scheduler.taskPlanTable)
 	for _, taskPlan := range scheduler.taskPlanTable {
 
 		// 小于或者等于当前时间，证明任务到期，要执行
 		if taskPlan.NextTime.Before(now) || taskPlan.NextTime.Equal(now) {
 
 			// 启动任务，注意如果上一次还没有结束本次会再次执行
+			zap.L().Sugar().Infof("执行任务: %v %v %v %v ", taskPlan.Task.Name, taskPlan.Task.Zk, taskPlan.Task.Command,
+				taskPlan.Task.CronExpr)
 			scheduler.tryStartTask(taskPlan)
 
 			// 更新下次执行时间
@@ -109,7 +113,7 @@ func (scheduler *Scheduler) tryStartTask(taskPlan *domain.TaskSchedulePlan) {
 	scheduler.taskExecutingTable[key] = taskExecuteInfo
 
 	// 执行任务
-	fmt.Println("触发执行任务:", taskExecuteInfo.Task.Name, taskExecuteInfo.PlanTime,
+	zap.L().Sugar().Infof("触发执行任务: %v %v %v", taskExecuteInfo.Task.Name, taskExecuteInfo.PlanTime,
 		taskExecuteInfo.RealTime)
 	G_executor.ExecuteTask(taskExecuteInfo)
 }
@@ -126,7 +130,7 @@ func (scheduler *Scheduler) scheduleLoop() {
 		select {
 		case taskEvent := <-scheduler.taskEventChan: //监听任务变化事件
 			// 对内存中维护的任务列表做增删改查
-			fmt.Println("监听任务变化事件", taskEvent.Task.Name, taskEvent.EventType)
+			zap.L().Sugar().Infof("监听任务变化事件: %v %v %v", taskEvent.Task.Name, taskEvent.EventType)
 			scheduler.handleTaskEvent(taskEvent)
 		case <-scheduleTimer.C: // 最近的任务到期了
 		case taskResult := <-scheduler.taskResultChan: // 监听任务执行结果
@@ -177,6 +181,6 @@ func InitScheduler() (err error) {
 	}
 	// 启动调度协程
 	go G_scheduler.scheduleLoop()
-	fmt.Printf("scheduleLoop完毕")
+	zap.L().Sugar().Info("scheduleLoop完毕")
 	return
 }

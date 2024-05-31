@@ -9,9 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"go-cron/config"
+
 	"github.com/gin-gonic/gin"
 	"github.com/natefinch/lumberjack"
-	"go-cron/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -36,6 +37,28 @@ func Init(cfg *config.LogConfig) (zapL *zap.Logger, err error) {
 	// 替换zap库中全局的logger
 	zap.ReplaceGlobals(lg)
 	return zap.L(), nil
+}
+
+// Init 初始化Logger
+func WorkerInit(cfg *config.WorkerLogConfig) (err error) {
+	writeSyncer := getLogWriter(
+		cfg.Filename,
+		cfg.MaxSize,
+		cfg.MaxBackups,
+		cfg.MaxAge,
+	)
+	encoder := getEncoder()
+	var l = new(zapcore.Level)
+	err = l.UnmarshalText([]byte(cfg.Level))
+	if err != nil {
+		return
+	}
+	core := zapcore.NewCore(encoder, writeSyncer, l)
+
+	lg := zap.New(core, zap.AddCaller())
+	// 替换zap库中全局的logger
+	zap.ReplaceGlobals(lg)
+	return
 }
 
 func getEncoder() zapcore.Encoder {
