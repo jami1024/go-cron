@@ -29,13 +29,3 @@ services:
       - go-cron-server:go-cron-server
     ports:
      - 80:80
-
-  # worker
-  go-cron-worker:
-    image: go-cron-worker:latest
-    container_name: go-cron-worker
-    restart: on-failure
-    environment:
-      - ETCD_IP=127.0.0.1
-      - ETCD_PORT=2379
-      - ZK=jpzk
