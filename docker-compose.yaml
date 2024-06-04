@@ -1,9 +1,31 @@
-#version: '3.0'  # docker compose第二版中version已经过时
 services:
+  # etcd
   etcd:
     image: 'bitnami/etcd:3.5.9'
+    container_name: etcd
+    restart: on-failure
     environment:
       - ALLOW_NONE_AUTHENTICATION=yes
     ports:
       #      所以你要用 12379 端口来连接 etcd
-      - '12379:2379'
+      - 2379:2379
+
+  # 后端服务
+  go-cron-server:
+    image: go-cron-server:latest
+    container_name: go-cron-server
+    restart: on-failure
+    links:
+      - etcd:etcd
+    ports:
+     - 8181:8181
+
+  # 前端 项目地址 https://github.com/jami1024/go-cron-web
+  go-cron-web:
+    image: go-cron-web:latest
+    container_name: go-cron-web
+    restart: on-failure
+    links:
+      - go-cron-server:go-cron-server
+    ports:
+     - 80:80
