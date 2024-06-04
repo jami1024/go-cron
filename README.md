@@ -8,39 +8,27 @@ go-cron 是基于golang实现统一定时任务平台。
 
 ## 安装
 ```shell
-https://github.com/jami1024/go-cron
-```
+# 后端
+git clone https://github.com/jami1024/go-cron
 
-## 修改配置
-```
-# 编辑config/config.json
-# 根据实际情况修改etcd.address
-```
-## 运行server
-> 需要安装docker-compose后在项目根目录执行`docker-compose up -d`安装etcd
-```shell
-cd go-cron
-go run cmd/server/main.go 
-
-config.Conf.EtcdConfig.Address
-[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
- - using env:   export GIN_MODE=release
- - using code:  gin.SetMode(gin.ReleaseMode)
-
-[GIN-debug] GET    /version                  --> go-cron/internal/web.InitWeb.func1 (3 handlers)
-[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (3 handlers)
-[GIN-debug] POST   /tasks/save               --> go-cron/internal/web.(*TaskHandler).Save-fm (3 handlers)
+# 前端 
+git clone https://github.com/jami1024/go-cron-web
 
 ```
-在目启动后请访问[后台地址](http://127.0.0.1:8181/swagger/index.html)查询相关接口
+## 修改服务端配置
+编辑config/config.json 根据实际情况修改etcd.address
 
-## docker compose
+
+## 运行 docker compose
 ```
 # 构建go-cron docker镜像
-docker build -t go-cron-server:latest .
+cd go-cron && docker build -t go-cron-server:latest .
 
-# 运行docker compose
-docker compose up -d
+# 构建go-cron-web docker镜像
+cd go-cron-web && docker build -t go-cron-web:latest .
+
+# 运行docker compose,
+cd go-cron && docker compose up -d
 
 注意：docker compose集成etcd、go-cron-web(前端程序)、go-cron(后端程序)
 ```
