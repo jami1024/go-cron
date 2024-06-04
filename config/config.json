@@ -18,7 +18,7 @@
     "max_backups": 7
   },
   "etcd": {
-    "address": ["127.0.0.1:12379"],
+    "address": ["127.0.0.1:2379"], 
     "key_path": "/cron/jobs/"
   }
 }
