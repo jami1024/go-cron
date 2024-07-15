@@ -115,7 +115,7 @@ func (scheduler *Scheduler) tryStartTask(taskPlan *domain.TaskSchedulePlan) {
 	// 执行任务
 	zap.L().Sugar().Infof("触发执行任务: %v %v %v", taskExecuteInfo.Task.Name, taskExecuteInfo.PlanTime,
 		taskExecuteInfo.RealTime)
-	G_executor.ExecuteTask(taskExecuteInfo)
+	go G_executor.ExecuteTask(taskExecuteInfo)
 }
 
 // 调度协程
@@ -130,7 +130,7 @@ func (scheduler *Scheduler) scheduleLoop() {
 		select {
 		case taskEvent := <-scheduler.taskEventChan: //监听任务变化事件
 			// 对内存中维护的任务列表做增删改查
-			zap.L().Sugar().Infof("监听任务变化事件: %v %v %v", taskEvent.Task.Name, taskEvent.EventType)
+			zap.L().Sugar().Infof("监听任务变化事件: %v %v", taskEvent.Task.Name, taskEvent.EventType)
 			scheduler.handleTaskEvent(taskEvent)
 		case <-scheduleTimer.C: // 最近的任务到期了
 		case taskResult := <-scheduler.taskResultChan: // 监听任务执行结果
